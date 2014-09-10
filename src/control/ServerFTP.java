@@ -5,37 +5,34 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class Servidor 
+public class ServerFTP
 {
-	
-	public static void main(String[]args)
+
+	public static void main(String[] args)
 	{
-		//Socket para conexión de cliente - TCP		
-		ServerSocket dSocketServidor=null;
-		try 
+
+		// Socket para conexión de cliente - TCP
+		ServerSocket dSocketServidor = null;
+		try
 		{
-			dSocketServidor=new ServerSocket(4000);
+			dSocketServidor = new ServerSocket(4000);
 			System.out.println("Esperando por clientes...");
-			while(true)
+			while (true)
 			{
 				Socket clientSocket = dSocketServidor.accept();
-				
-				
-				//Recibir clientes y asignárselos a un hilo
-				HiloServidor hilo=new HiloServidor(clientSocket);
+
+				// Recibir clientes y asignárselos a un hilo
+				ServerPI hilo = new ServerPI(clientSocket);
 				hilo.start();
 			}
-			
-			
-		} catch (SocketException e) 
+
+		} catch (SocketException e)
 		{
 			System.out.println("Error creando el socket");
-		} catch (IOException e) 
+		} catch (IOException e)
 		{
 			System.out.println("Error en el flujo de información");
 		}
 	}
-	
-	
 
 }
