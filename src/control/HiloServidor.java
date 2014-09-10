@@ -3,60 +3,71 @@ package control;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
+import java.io.PrintWriter;
 import java.net.Socket;
 
-
-public class HiloServidor extends Thread 
+public class HiloServidor extends Thread
 {
 
-	// Servicio de paquetes no orientado a conexión
-	DatagramPacket dPacketEnvia;
-	// Puerto fuente
-	int puerto = 0;
-	// Dirección fuente
-	InetAddress direccion = null;
-	
-	Socket clientSocket;
+	private Socket sktControl;
+	private PrintWriter out;
 
-
-	public HiloServidor(Socket clientSocket) 
+	public HiloServidor(Socket clientSocket)
 	{
-		this.clientSocket = clientSocket;
+		try
+		{
+			this.sktControl = clientSocket;
+			out = new PrintWriter(clientSocket.getOutputStream(), true);
+		} catch (IOException e)
+		{
+			System.out.println("Error creando el flujo de transmisión");
+		}
+
 	}
 
-	public void run() 
+	public void run()
 	{
 		System.out.println("Got a client");
-		while (true) 
+		while (true)
 		{
-			if(clientSocket.isClosed())
+			if (sktControl.isClosed())
 			{
-			}
-			else
+			} else
 			{
 				try
 				{
-					BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-					//Mientras el buffer está vacío
-					while(!in.ready())
+
+					BufferedReader in = new BufferedReader(new InputStreamReader(sktControl.getInputStream()));
+					// Mientras el buffer está vacío
+					while (!in.ready())
 					{
 					}
-					System.out.println(in.readLine());
-					System.out.println("\n");
+
+					String comando = in.readLine();
+
+					if (comando.equalsIgnoreCase("PASV"))
+					{
+						out.println("OK");
+					}
+					// Finalizar la conexión
+					else if (comando.equalsIgnoreCase("END"))
+					{
+						out.close();
+					}
+					// En caso de que no se conozca el comando
+					else
+					{
+						out.println("ERR");
+					}
 
 				} catch (IOException e)
 				{
-					e.printStackTrace();
+					System.out.println("Error en el flujo de información");
 				}
 			}
-
 
 		}
 
 	}
-	
 
-	
 }
