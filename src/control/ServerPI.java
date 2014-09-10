@@ -102,19 +102,10 @@ public class ServerPI extends Thread
 							commandLIST(separacion[1]);
 						} else if (separacion[0].equalsIgnoreCase("STOR"))
 						{
-							Socket sktDatos = serverDTP.socketDatos.accept();
-
-							InputStream is = sktDatos.getInputStream();
-							try
-							{
-								serverDTP.receiveFile(is, separacion[1]);
-								System.out.println("Se recibieron los datos del cliente");
-								out.println(SUCCESS);
-							} catch (Exception e)
-							{
-								out.println(ERROR);
-							}
-
+							commandSTOR(separacion[1]);
+						} else if (separacion[0].equalsIgnoreCase("RETR"))
+						{
+							commandRETR(separacion[1]);
 						}
 
 					}
@@ -234,8 +225,36 @@ public class ServerPI extends Thread
 	 * @param archivo
 	 *            Archivo que se va a almacenar en el servidor
 	 */
-	public void commandSTORE(File archivo)
+	public void commandSTOR(String rutaArchivo)
 	{
+		try
+		{
+			Socket sktDatos = serverDTP.socketDatos.accept();
+			InputStream is = sktDatos.getInputStream();
+			serverDTP.receiveFile(is, rutaArchivo);
+			System.out.println("Se recibieron los datos del cliente");
+			out.println(SUCCESS);
+		} catch (Exception e)
+		{
+			out.println(ERROR);
+		}
+	}
 
+	/**
+	 * Atender la solicitud de envíar un archivo al cliente
+	 * 
+	 * @param nombreArchivo
+	 */
+	public void commandRETR(String nombreArchivo)
+	{
+		try
+		{
+			serverDTP.sendFile(nombreArchivo);
+			System.out.println("Se envían los datos al cliente");
+			out.println(SUCCESS);
+		} catch (Exception e)
+		{
+			out.println(ERROR);
+		}
 	}
 }
