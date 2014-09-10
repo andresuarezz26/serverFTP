@@ -3,6 +3,7 @@ package control;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -22,13 +23,23 @@ public class ServerPI extends Thread
 	private final String SUCCESS = "S";
 	private final String ERROR = "E";
 
-	public ServerPI(Socket clientSocket)
+	/**
+	 * Constructor del Server PI
+	 * 
+	 * @param clientSocket
+	 *            Socket de control hacia el cliente
+	 * @param serverDTP
+	 *            Componente que interactúa con el file system del servidor y se
+	 *            encarga de la conexión de datos
+	 */
+	public ServerPI(Socket clientSocket, ServerDTP serverDTP)
 	{
 		try
 		{
 			this.sktControl = clientSocket;
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
-			serverDTP = new ServerDTP();
+			// Iniciar el Server DTP
+			this.serverDTP = serverDTP;
 		} catch (IOException e)
 		{
 			System.out.println("Error creando el flujo de transmisión");
@@ -74,8 +85,10 @@ public class ServerPI extends Thread
 						{
 							out.println(ERROR);
 						}
-						// 2. Comandos con un parámetro
-					} else if (separacion.length == 2)
+
+					}
+					// 2. Comandos con un parámetro
+					else if (separacion.length == 2)
 					{
 						// Comando CWD
 						if (separacion[0].equalsIgnoreCase("CWD"))
@@ -87,9 +100,26 @@ public class ServerPI extends Thread
 						else if (separacion[0].equalsIgnoreCase("LIST"))
 						{
 							commandLIST(separacion[1]);
+						} else if (separacion[0].equalsIgnoreCase("STOR"))
+						{
+							Socket sktDatos = serverDTP.socketDatos.accept();
+
+							InputStream is = sktDatos.getInputStream();
+							try
+							{
+								serverDTP.receiveFile(is, separacion[1]);
+								System.out.println("Se recibieron los datos del cliente");
+								out.println(SUCCESS);
+							} catch (Exception e)
+							{
+								out.println(ERROR);
+							}
+
 						}
-						// 3. Comandos con más de un parámetro
-					} else
+
+					}
+					// 3. Comandos con más de un parámetro
+					else
 					{
 						out.println(ERROR);
 
@@ -191,7 +221,21 @@ public class ServerPI extends Thread
 				out.println(respuestaList);
 			}
 
+		} else
+		{
+			out.println(ERROR);
 		}
+
+	}
+
+	/**
+	 * Atienda la solicitud de almacenar el archivo enviado por el cliente
+	 * 
+	 * @param archivo
+	 *            Archivo que se va a almacenar en el servidor
+	 */
+	public void commandSTORE(File archivo)
+	{
 
 	}
 }
