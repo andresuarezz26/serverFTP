@@ -1,67 +1,57 @@
 package control;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.Socket;
 
 
 public class HiloServidor extends Thread 
 {
-	// Socket
-	DatagramSocket dSocketHilo;
+
 	// Servicio de paquetes no orientado a conexión
-	DatagramPacket dPacketRecibe, dPacketEnvia;
+	DatagramPacket dPacketEnvia;
 	// Puerto fuente
 	int puerto = 0;
 	// Dirección fuente
 	InetAddress direccion = null;
+	
+	Socket clientSocket;
 
 
-	public HiloServidor(DatagramPacket dPacketRecibe) 
+	public HiloServidor(Socket clientSocket) 
 	{
-		try 
-		{
-			dSocketHilo = new DatagramSocket();
-		} catch (SocketException e) 
-		{
-			System.out.println("Error creando el socket");
-		}
-
-		// Asignar valores a las variables
-		this.dPacketRecibe = dPacketRecibe;
-		puerto = dPacketRecibe.getPort();
-		direccion = dPacketRecibe.getAddress();
-
-		// Respuesta del hilo
-		byte[] envio = new byte[250];
-		dPacketEnvia = new DatagramPacket(envio, envio.length, direccion, puerto);
-		try 
-		{
-			dSocketHilo.send(dPacketEnvia);
-		} catch (IOException e) 
-		{
-			System.out.println("Error enviando el paquete");
-		}
-		
+		this.clientSocket = clientSocket;
 	}
 
 	public void run() 
 	{
+		System.out.println("Got a client");
 		while (true) 
 		{
-			try 
+			if(clientSocket.isClosed())
 			{
-				byte[] buzon = new byte[250];
-				dPacketRecibe = new DatagramPacket(buzon, buzon.length);
-				dSocketHilo.receive(dPacketRecibe);
-				String mensaje = new String(dPacketRecibe.getData(), 0, dPacketRecibe.getLength());
-				System.out.println("El mensaje es: " + mensaje);
-			} catch (IOException e) 
+			}
+			else
 			{
-				System.out.println("Error en el flujo");
-			} 
+				try
+				{
+					BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					//Mientras el buffer está vacío
+					while(!in.ready())
+					{
+					}
+					System.out.println(in.readLine());
+					System.out.println("\n");
+
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+
 
 		}
 
