@@ -1,11 +1,15 @@
 serverFTP
 =========
 
-Basic FTP server
+Servidor FTP básico
 
-Functionalities:
+Funcionalidades:
 
-1. Get list of files
-2. Upload file
-3. Send file to a FTP client
+1. Obtener lista de archivos de un directorio
+2. Envíar archivos a un cliente FTP
+3. Recibir archivos de un cliente FTP
+4. Cambiar de directorio
+5. Borrar un archivo
+6. Renombrar un archivo
 
+Nota: La transferencia es en modalidad ASCII y binaria
