@@ -1,0 +1,14 @@
+oct 19, 2014 4:46:32 PM control.ServerPI run
+Información: Accede un cliente
+oct 19, 2014 4:46:34 PM control.ServerPI run
+Información: LIST
+oct 19, 2014 4:46:34 PM control.ServerPI getListOfDirectory
+Información: archivoprueba.txt;docs;gerardo.txt;
+oct 19, 2014 4:47:37 PM control.ServerPI run
+Información: CWD docs
+oct 19, 2014 4:47:37 PM control.ServerPI commandCWD
+Información: Se cambia de directorio
+oct 19, 2014 4:47:39 PM control.ServerPI run
+Información: LIST
+oct 19, 2014 4:47:39 PM control.ServerPI getListOfDirectory
+Información: integrantes.txt;
