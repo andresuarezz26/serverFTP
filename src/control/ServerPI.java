@@ -16,8 +16,8 @@ import utilities.MyLogger;
 
 public class ServerPI extends Thread
 {
+	// Archivo al que se apunta para cambiar el nombre
 	private File apuntador;
-	private boolean isRNFR;
 
 	// Socket y flujo de escritura
 	private Socket sktControl;
@@ -30,7 +30,7 @@ public class ServerPI extends Thread
 	private final String SUCCESS = "S";
 	private final String ERROR = "E";
 
-	// Atributos para la autenticaci�n
+	// Atributos para la autenticación
 	private String usuarioEsperandoAutenticacion = null;
 	private String passwordUsuario = null;
 	boolean esperandoUsuario = false;
@@ -66,7 +66,6 @@ public class ServerPI extends Thread
 			// Iniciar el Server DTP
 			this.serverDTP = serverDTP;
 			apuntador = null;
-			isRNFR = false;
 		} catch (IOException e)
 		{
 			System.out.println("Error creando el flujo de transmisión");
@@ -98,7 +97,8 @@ public class ServerPI extends Thread
 					System.out.println(comando);
 					MyLogger.logger.log(Level.INFO, comando);
 					String[] separacion = comando.split(" ");
-					// Si el usuario se quiere loguear y ya est� logueado
+
+					// Si el usuario se quiere loguear y ya está logueado
 					if (logueado == true && separacion[0].equalsIgnoreCase("USER"))
 					{
 						out.println("already_logged");
@@ -121,29 +121,26 @@ public class ServerPI extends Thread
 									out.close();
 									MyLogger.logger.log(Level.INFO, "Termina el cliente");
 									// Comando desconocido
-								} else if (comando.equalsIgnoreCase("LIST"))
+								} else if (comando.equalsIgnoreCase("LIST") || comando.equalsIgnoreCase("LS"))
 								{
 
 									String respuestaList = getListOfDirectory(serverDTP.getCurrentPath());
 									out.println(respuestaList);
 
-								} else if (comando.equalsIgnoreCase("ascii"))
+								} else if (comando.equalsIgnoreCase("ASCII"))
 								{
 
-									System.out.println("llego al ascii");
 									isAscii = true;
 									out.println("ASCII_mode");
 
-								} else if (comando.equalsIgnoreCase("binary"))
+								} else if (comando.equalsIgnoreCase("BINARY"))
 								{
 
-									System.out.println("llego al binario");
 									isAscii = false;
 									out.println("binary_mode");
 
 								} else
 								{
-
 									out.println(ERROR);
 									MyLogger.logger.log(Level.INFO, "Comando desconocido");
 
@@ -156,31 +153,31 @@ public class ServerPI extends Thread
 							{
 
 								// Comando CWD
-								if (separacion[0].equalsIgnoreCase("CWD"))
+								if (separacion[0].equalsIgnoreCase("CWD") || separacion[0].equalsIgnoreCase("CD"))
 								{
 									commandCWD(separacion[1]);
 
 								}
 								// Comando LIST
-								else if (separacion[0].equalsIgnoreCase("LIST"))
+								else if (separacion[0].equalsIgnoreCase("LIST") || separacion[0].equalsIgnoreCase("LS"))
 								{
 									commandLIST(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("STOR"))
+								} else if (separacion[0].equalsIgnoreCase("STOR") || separacion[0].equalsIgnoreCase("PUT"))
 								{
 									commandSTOR(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("RETR"))
+								} else if (separacion[0].equalsIgnoreCase("RETR") || (separacion[0].equalsIgnoreCase("GET")))
 								{
 									commandRETR(separacion[1]);
 								}
 								// Comando DELE
-								else if (separacion[0].equalsIgnoreCase("DELE"))
+								else if (separacion[0].equalsIgnoreCase("DELE") || separacion[0].equalsIgnoreCase("DELETE"))
 								{
 									commandDELE(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("RNFR"))
+								} else if (separacion[0].equalsIgnoreCase("RNFR") || separacion[0].equalsIgnoreCase("SELECT"))
 								{
 									commandRNFR(separacion[1]);
 
-								} else if (separacion[0].equalsIgnoreCase("RNTO"))
+								} else if (separacion[0].equalsIgnoreCase("RNTO") || separacion[0].equalsIgnoreCase("RENAME"))
 								{
 									commandRNTO(separacion[1]);
 								} else if (separacion[0].equalsIgnoreCase("USER"))
@@ -411,8 +408,10 @@ public class ServerPI extends Thread
 	}
 
 	/**
+	 * Permite eliminar un archivo
 	 * 
 	 * @param nombreArchivo
+	 *            Nombre del archivo que se va a eliminar
 	 */
 	public void commandDELE(String nombreArchivo)
 	{
@@ -424,7 +423,6 @@ public class ServerPI extends Thread
 				if (f.delete())
 				{
 					MyLogger.logger.log(Level.INFO, "Se elimina el archivo");
-
 					out.println("successful_dele");
 				} else
 				{
@@ -448,12 +446,17 @@ public class ServerPI extends Thread
 
 	}
 
+	/**
+	 * Permite cambiar el nombre a un archivo
+	 * 
+	 * @param nuevoNombre
+	 *            String nuevo nombre
+	 */
 	public void commandRNTO(String nuevoNombre)
 	{
 		try
-
 		{
-			if (apuntador.exists() && apuntador.isFile() && (apuntador != null) && isRNFR)
+			if (apuntador.exists() && apuntador.isFile() && (apuntador != null))
 			{
 
 				File nuevoArchivo = new File(serverDTP.getCurrentPath() + "/" + nuevoNombre);
@@ -462,31 +465,34 @@ public class ServerPI extends Thread
 					MyLogger.logger.log(Level.INFO, "Se cambia el nombre del archivo");
 					out.println("successful_rename");
 
-					isRNFR = false;
 				} else
 				{
 
 					MyLogger.logger.log(Level.WARNING, "No se pudo renombrar");
 					out.println("error_rename");
-					isRNFR = false;
 				}
 			} else
 			{
-				isRNFR = false;
-
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
-
-				out.println("error_dele");
+				out.println("error_rename");
 			}
 
 		} catch (Exception e)
 		{
 			MyLogger.logger.log(Level.WARNING, "No se pudo cambiar el nombre");
-			isRNFR = false;
 			out.println(ERROR);
 		}
 	}
 
+	/**
+	 * Permite comprobar la identidad del usuario
+	 * 
+	 * @param nombreUsuario
+	 *            nombre del usuario
+	 * @param passwordUsuario
+	 *            password del usuario
+	 * @return True si corresponden ambos datos y falso en caso contrario
+	 */
 	public boolean commandPASS(String nombreUsuario, String passwordUsuario)
 	{
 		if (nombreUsuario == null || passwordUsuario == null)
@@ -499,8 +505,7 @@ public class ServerPI extends Thread
 
 			try
 			{
-				// Leer el listado de Usuarios y contrase�as
-
+				// Leer el listado de Usuarios y contrasenas
 				BufferedReader reader = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/root/" + "usersftp.txt"));
 
 				String line = reader.readLine();
@@ -538,6 +543,12 @@ public class ServerPI extends Thread
 		}
 	}
 
+	/**
+	 * Permite seleccionar el archivo al que se le va a cambiar el nombre
+	 * 
+	 * @param nombreArchivo
+	 *            Nombre del archivo que se desea seleccionar
+	 */
 	public void commandRNFR(String nombreArchivo)
 	{
 		try
@@ -545,13 +556,11 @@ public class ServerPI extends Thread
 			File f = new File(serverDTP.getCurrentPath() + "/" + nombreArchivo);
 			if (f.exists() && f.isFile())
 			{
-				isRNFR = true;
 				apuntador = f;
 				MyLogger.logger.log(Level.WARNING, "Se selecciona el archivo correctamente");
 				out.println("successful_rnfr");
 			} else
 			{
-				isRNFR = false;
 
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
 
@@ -561,7 +570,6 @@ public class ServerPI extends Thread
 
 		} catch (Exception e)
 		{
-			isRNFR = false;
 			MyLogger.logger.log(Level.WARNING, "No se pudo seleccionar el archivo");
 
 			out.println(ERROR);
