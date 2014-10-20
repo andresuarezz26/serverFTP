@@ -33,7 +33,6 @@ public class ServerPI extends Thread
 	// Atributos para la autenticación
 	private String usuarioEsperandoAutenticacion = null;
 	private String passwordUsuario = null;
-	boolean esperandoUsuario = false;
 	private int contadorAutenticacion = 0;
 	boolean logueado = false;
 	boolean isAscii = true;
@@ -63,9 +62,11 @@ public class ServerPI extends Thread
 		{
 			this.sktControl = clientSocket;
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
+
 			// Iniciar el Server DTP
 			this.serverDTP = serverDTP;
 			apuntador = null;
+
 		} catch (IOException e)
 		{
 			System.out.println("Error creando el flujo de transmisión");
@@ -94,13 +95,13 @@ public class ServerPI extends Thread
 
 					String comando = in.readLine();
 
-					System.out.println(comando);
 					MyLogger.logger.log(Level.INFO, comando);
-					String[] separacion = comando.split(" ");
 
+					String[] separacion = comando.split(" ");
 					// Si el usuario se quiere loguear y ya está logueado
 					if (logueado == true && separacion[0].equalsIgnoreCase("USER"))
 					{
+						MyLogger.logger.log(Level.INFO, "El usuario se logueó");
 						out.println("already_logged");
 					} else
 					{
@@ -108,6 +109,7 @@ public class ServerPI extends Thread
 						// comandos
 						if (logueado == false && !(separacion[0].equalsIgnoreCase("USER") || separacion[0].equalsIgnoreCase("PASS")))
 						{
+							MyLogger.logger.log(Level.WARNING, "Debe loguearse");
 							out.println("please_log");
 						} else
 						{
@@ -120,7 +122,7 @@ public class ServerPI extends Thread
 								{
 									out.close();
 									MyLogger.logger.log(Level.INFO, "Termina el cliente");
-									// Comando desconocido
+									// Comando LIST
 								} else if (comando.equalsIgnoreCase("LIST") || comando.equalsIgnoreCase("LS"))
 								{
 
@@ -132,12 +134,14 @@ public class ServerPI extends Thread
 
 									isAscii = true;
 									out.println("ASCII_mode");
+									MyLogger.logger.log(Level.INFO, "Se elige el modo ASCII");
 
 								} else if (comando.equalsIgnoreCase("BINARY"))
 								{
 
 									isAscii = false;
 									out.println("binary_mode");
+									MyLogger.logger.log(Level.INFO, "Se elige el modo binario");
 
 								} else
 								{
@@ -162,10 +166,14 @@ public class ServerPI extends Thread
 								else if (separacion[0].equalsIgnoreCase("LIST") || separacion[0].equalsIgnoreCase("LS"))
 								{
 									commandLIST(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("STOR") || separacion[0].equalsIgnoreCase("PUT"))
+								}
+								// Comando STOR
+								else if (separacion[0].equalsIgnoreCase("STOR") || separacion[0].equalsIgnoreCase("PUT"))
 								{
 									commandSTOR(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("RETR") || (separacion[0].equalsIgnoreCase("GET")))
+								}
+								// Comando RETR
+								else if (separacion[0].equalsIgnoreCase("RETR") || (separacion[0].equalsIgnoreCase("GET")))
 								{
 									commandRETR(separacion[1]);
 								}
@@ -173,44 +181,51 @@ public class ServerPI extends Thread
 								else if (separacion[0].equalsIgnoreCase("DELE") || separacion[0].equalsIgnoreCase("DELETE"))
 								{
 									commandDELE(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("RNFR") || separacion[0].equalsIgnoreCase("SELECT"))
+								}
+								// Comando RNFR
+								else if (separacion[0].equalsIgnoreCase("RNFR") || separacion[0].equalsIgnoreCase("SELECT"))
 								{
 									commandRNFR(separacion[1]);
 
-								} else if (separacion[0].equalsIgnoreCase("RNTO") || separacion[0].equalsIgnoreCase("RENAME"))
+								}
+								// Comando RNTO
+								else if (separacion[0].equalsIgnoreCase("RNTO") || separacion[0].equalsIgnoreCase("RENAME"))
 								{
 									commandRNTO(separacion[1]);
-								} else if (separacion[0].equalsIgnoreCase("USER"))
+								}
+								// Comando USER
+								else if (separacion[0].equalsIgnoreCase("USER"))
 								{
 									usuarioEsperandoAutenticacion = separacion[1];
-									esperandoUsuario = true;
 									contadorAutenticacion = 0;
 									commandUSER();
 
-								} else if (separacion[0].equalsIgnoreCase("PASS"))
+								}
+								// Comando PASS
+								else if (separacion[0].equalsIgnoreCase("PASS"))
 								{
 									if (contadorAutenticacion == 1)
 									{
-										if (esperandoUsuario == true)
-										{
-											passwordUsuario = separacion[1];
-											esperandoUsuario = false;
-											if (commandPASS(usuarioEsperandoAutenticacion, passwordUsuario) == false)
-											{
-												passwordUsuario = null;
-												usuarioEsperandoAutenticacion = null;
 
-											} else
-											{
-												logueado = true;
-											}
+										passwordUsuario = separacion[1];
+										if (commandPASS(usuarioEsperandoAutenticacion, passwordUsuario) == false)
+										{
+											passwordUsuario = null;
+											usuarioEsperandoAutenticacion = null;
+											MyLogger.logger.log(Level.WARNING, "Errores de autenticación");
+
 										} else
 										{
-											out.println(ERROR);
+											logueado = true;
+											MyLogger.logger.log(Level.INFO, "La autenticación fue existosa");
+
 										}
+
 									} else
 									{
 										out.println(ERROR);
+										MyLogger.logger.log(Level.WARNING, "El password no se ingresa inmediatamente después del usuario");
+
 									}
 
 								}
@@ -220,7 +235,7 @@ public class ServerPI extends Thread
 							else
 							{
 								out.println(ERROR);
-
+								MyLogger.logger.log(Level.WARNING, "El comando es incorrecto");
 							}
 
 						}
@@ -228,6 +243,7 @@ public class ServerPI extends Thread
 					}
 				} catch (IOException e)
 				{
+					MyLogger.logger.log(Level.WARNING, "Error en el flujo de información");
 					System.out.println("Error en el flujo de información");
 				}
 			}
@@ -311,9 +327,14 @@ public class ServerPI extends Thread
 		}
 	}
 
+	/**
+	 * Responde que está esperando por el password
+	 */
 	public void commandUSER()
 	{
 		out.println("waiting_pass");
+		MyLogger.logger.log(Level.INFO, "Se está esperando por el password");
+
 	}
 
 	/**
@@ -389,15 +410,12 @@ public class ServerPI extends Thread
 			if (f.exists() && f.isFile())
 			{
 				out.println("successful_retr");
-
 				serverDTP.sendFile(nombreArchivo);
 				MyLogger.logger.log(Level.INFO, "Se envían los datos al cliente");
 			} else
 			{
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
-
 				out.println("error_retr");
-
 			}
 
 		} catch (Exception e)
@@ -440,7 +458,6 @@ public class ServerPI extends Thread
 		} catch (Exception e)
 		{
 			MyLogger.logger.log(Level.WARNING, "Hubo problemas en el flujo de la información");
-
 			out.println(ERROR);
 		}
 
@@ -557,7 +574,7 @@ public class ServerPI extends Thread
 			if (f.exists() && f.isFile())
 			{
 				apuntador = f;
-				MyLogger.logger.log(Level.WARNING, "Se selecciona el archivo correctamente");
+				MyLogger.logger.log(Level.INFO, "Se selecciona el archivo correctamente");
 				out.println("successful_rnfr");
 			} else
 			{
