@@ -13,6 +13,7 @@ import java.net.Socket;
 
 public class ServerDTP
 {
+	
 	// Directorio raíz
 	private String currentPath;
 
@@ -24,6 +25,7 @@ public class ServerDTP
 		currentPath = System.getProperty("user.dir") + "/root";
 
 		this.socketDatos = socketDatos;
+		
 	}
 
 	public String getCurrentPath()
