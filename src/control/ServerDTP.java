@@ -107,9 +107,7 @@ public class ServerDTP
 				sktData.close();
 			} else
 			{
-
 				System.out.println("El archivo no existe");
-
 			}
 
 		} catch (IOException e)
