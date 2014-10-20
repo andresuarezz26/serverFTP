@@ -30,13 +30,13 @@ public class ServerPI extends Thread
 	private final String SUCCESS = "S";
 	private final String ERROR = "E";
 
-	//Atributos para la autenticación
-	private String usuarioEsperandoAutenticacion=null;
-	private String passwordUsuario= null;
+	// Atributos para la autenticaciï¿½n
+	private String usuarioEsperandoAutenticacion = null;
+	private String passwordUsuario = null;
 	boolean esperandoUsuario = false;
-	private int contadorAutenticacion=0;
-	boolean logueado=false;
-	boolean isAscii=true;
+	private int contadorAutenticacion = 0;
+	boolean logueado = false;
+	boolean isAscii = true;
 
 	/**
 	 * Constructor del Server PI
@@ -98,14 +98,19 @@ public class ServerPI extends Thread
 					System.out.println(comando);
 					MyLogger.logger.log(Level.INFO, comando);
 					String[] separacion = comando.split(" ");
-					//Si el usuario se quiere loguear y ya está logueado
-					if(logueado==true&&separacion[0].equalsIgnoreCase("USER")){
+					// Si el usuario se quiere loguear y ya estï¿½ logueado
+					if (logueado == true && separacion[0].equalsIgnoreCase("USER"))
+					{
 						out.println("already_logged");
-					}else{
-						//Si el usuario no se ha logueado y quiere usar los comandos
-						if(logueado==false&&!(separacion[0].equalsIgnoreCase("USER")||separacion[0].equalsIgnoreCase("PASS"))){
+					} else
+					{
+						// Si el usuario no se ha logueado y quiere usar los
+						// comandos
+						if (logueado == false && !(separacion[0].equalsIgnoreCase("USER") || separacion[0].equalsIgnoreCase("PASS")))
+						{
 							out.println("please_log");
-						}else{
+						} else
+						{
 
 							// 1. Comandos sin parametros
 							if (separacion.length == 1)
@@ -115,28 +120,29 @@ public class ServerPI extends Thread
 								{
 									out.close();
 									MyLogger.logger.log(Level.INFO, "Termina el cliente");
-									//Comando desconocido
+									// Comando desconocido
 								} else if (comando.equalsIgnoreCase("LIST"))
 								{
 
 									String respuestaList = getListOfDirectory(serverDTP.getCurrentPath());
 									out.println(respuestaList);
 
-								} else if(comando.equalsIgnoreCase("ascii"))
+								} else if (comando.equalsIgnoreCase("ascii"))
 								{
-	
+
 									System.out.println("llego al ascii");
-									isAscii=true;
+									isAscii = true;
 									out.println("ASCII_mode");
-									
-								}else if(comando.equalsIgnoreCase("binary"))
+
+								} else if (comando.equalsIgnoreCase("binary"))
 								{
 
 									System.out.println("llego al binario");
-									isAscii=false;
+									isAscii = false;
 									out.println("binary_mode");
 
-								}else{
+								} else
+								{
 
 									out.println(ERROR);
 									MyLogger.logger.log(Level.INFO, "Comando desconocido");
@@ -144,7 +150,6 @@ public class ServerPI extends Thread
 								}
 
 							}
-
 
 							// 2. Comandos con un parÃ¡metro
 							else if (separacion.length == 2)
@@ -167,45 +172,49 @@ public class ServerPI extends Thread
 								{
 									commandRETR(separacion[1]);
 								}
-								//Comando DELE
-								else if(separacion[0].equalsIgnoreCase("DELE"))
+								// Comando DELE
+								else if (separacion[0].equalsIgnoreCase("DELE"))
 								{
 									commandDELE(separacion[1]);
-								}else if(separacion[0].equalsIgnoreCase("RNFR"))
+								} else if (separacion[0].equalsIgnoreCase("RNFR"))
 								{
 									commandRNFR(separacion[1]);
 
-
-								} else if(separacion[0].equalsIgnoreCase("RNTO") )
+								} else if (separacion[0].equalsIgnoreCase("RNTO"))
 								{
 									commandRNTO(separacion[1]);
-								}else if(separacion[0].equalsIgnoreCase("USER") )
+								} else if (separacion[0].equalsIgnoreCase("USER"))
 								{
-									usuarioEsperandoAutenticacion=separacion[1];
-									esperandoUsuario=true;
-									contadorAutenticacion=0;
+									usuarioEsperandoAutenticacion = separacion[1];
+									esperandoUsuario = true;
+									contadorAutenticacion = 0;
 									commandUSER();
 
-								}else if(separacion[0].equalsIgnoreCase("PASS")){
-									if(contadorAutenticacion==1){
-										if(esperandoUsuario==true)
+								} else if (separacion[0].equalsIgnoreCase("PASS"))
+								{
+									if (contadorAutenticacion == 1)
+									{
+										if (esperandoUsuario == true)
 										{
-											passwordUsuario=separacion[1];
-											esperandoUsuario=false;
-											if(commandPASS(usuarioEsperandoAutenticacion,passwordUsuario)==false){
-												passwordUsuario=null;
-												usuarioEsperandoAutenticacion=null;
+											passwordUsuario = separacion[1];
+											esperandoUsuario = false;
+											if (commandPASS(usuarioEsperandoAutenticacion, passwordUsuario) == false)
+											{
+												passwordUsuario = null;
+												usuarioEsperandoAutenticacion = null;
 
-											}else{
-												logueado=true;
+											} else
+											{
+												logueado = true;
 											}
-										}else{
+										} else
+										{
 											out.println(ERROR);
 										}
-									}else{
+									} else
+									{
 										out.println(ERROR);
 									}
-
 
 								}
 
@@ -217,7 +226,7 @@ public class ServerPI extends Thread
 
 							}
 
-						}	
+						}
 
 					}
 				} catch (IOException e)
@@ -225,7 +234,6 @@ public class ServerPI extends Thread
 					System.out.println("Error en el flujo de informaciÃ³n");
 				}
 			}
-
 
 			contadorAutenticacion++;
 		}
@@ -306,7 +314,8 @@ public class ServerPI extends Thread
 		}
 	}
 
-	public void commandUSER(){
+	public void commandUSER()
+	{
 		out.println("waiting_pass");
 	}
 
@@ -384,17 +393,15 @@ public class ServerPI extends Thread
 			{
 				out.println("successful_retr");
 
-				serverDTP.sendFile(nombreArchivo);	
+				serverDTP.sendFile(nombreArchivo);
 				MyLogger.logger.log(Level.INFO, "Se envÃ­an los datos al cliente");
-			}else{
+			} else
+			{
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
-
 
 				out.println("error_retr");
 
 			}
-
-
 
 		} catch (Exception e)
 		{
@@ -426,14 +433,11 @@ public class ServerPI extends Thread
 					out.println("error_dele");
 				}
 
-
-			}else{
+			} else
+			{
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
 				out.println("error_dele");
 			}
-
-
-
 
 		} catch (Exception e)
 		{
@@ -448,20 +452,21 @@ public class ServerPI extends Thread
 	{
 		try
 
-		{	
-			if(apuntador.exists()&&apuntador.isFile()&&(apuntador!=null)&&isRNFR)
+		{
+			if (apuntador.exists() && apuntador.isFile() && (apuntador != null) && isRNFR)
 			{
 
-				File nuevoArchivo = new File(serverDTP.getCurrentPath()+"/"+nuevoNombre);
-				if (apuntador.renameTo(nuevoArchivo)) {
+				File nuevoArchivo = new File(serverDTP.getCurrentPath() + "/" + nuevoNombre);
+				if (apuntador.renameTo(nuevoArchivo))
+				{
 					MyLogger.logger.log(Level.INFO, "Se cambia el nombre del archivo");
 					out.println("successful_rename");
 
 					isRNFR = false;
-				} else {
+				} else
+				{
 
-
-MyLogger.logger.log(Level.WARNING, "No se pudo renombrar");
+					MyLogger.logger.log(Level.WARNING, "No se pudo renombrar");
 					out.println("error_rename");
 					isRNFR = false;
 				}
@@ -482,56 +487,56 @@ MyLogger.logger.log(Level.WARNING, "No se pudo renombrar");
 		}
 	}
 
-
-	public boolean commandPASS(String nombreUsuario,String passwordUsuario){
-		if(nombreUsuario==null||passwordUsuario==null){
+	public boolean commandPASS(String nombreUsuario, String passwordUsuario)
+	{
+		if (nombreUsuario == null || passwordUsuario == null)
+		{
 			out.println("autentication_error");
 
 			return false;
-		}else{
+		} else
+		{
 
+			try
+			{
+				// Leer el listado de Usuarios y contraseï¿½as
 
-			try {
-				//Leer el listado de Usuarios y contraseñas
-				
-				BufferedReader reader = new BufferedReader(new FileReader("C:/Users/usuario/Documents/FTP/serverFTP/root/usersftp.txt"));
-
+				BufferedReader reader = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/root/" + "usersftp.txt"));
 
 				String line = reader.readLine();
-				boolean salir=false;
-				while(line != null&&salir==false)
+				boolean salir = false;
+				while (line != null && salir == false)
 				{
 
 					line = reader.readLine();
-					if(line!=null){
-						String [] separacion=line.split(";");
+					if (line != null)
+					{
+						String[] separacion = line.split(";");
 
-						if(separacion[0].equalsIgnoreCase(usuarioEsperandoAutenticacion)&&separacion[1].equalsIgnoreCase(passwordUsuario))
+						if (separacion[0].equalsIgnoreCase(usuarioEsperandoAutenticacion) && separacion[1].equalsIgnoreCase(passwordUsuario))
 						{
 							out.println("autentication_success");
 
-							logueado=true;
+							logueado = true;
 							reader.close();
 							return true;
 
-						}	
+						}
 					}
 
-				} 	
+				}
 				out.println("autentication_error");
 				reader.close();
-				
-			} catch (Exception e) {
-				
+
+			} catch (Exception e)
+			{
+
 				e.printStackTrace();
 			}
 			return false;
 
-
-
 		}
 	}
-
 
 	public void commandRNFR(String nombreArchivo)
 	{
@@ -549,7 +554,7 @@ MyLogger.logger.log(Level.WARNING, "No se pudo renombrar");
 				isRNFR = false;
 
 				MyLogger.logger.log(Level.WARNING, "El archivo no existe");
-				
+
 				out.println("error_rnfr");
 				apuntador = null;
 			}

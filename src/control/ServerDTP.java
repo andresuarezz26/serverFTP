@@ -13,7 +13,7 @@ import java.net.Socket;
 
 public class ServerDTP
 {
-	
+
 	// Directorio raíz
 	private String currentPath;
 
@@ -25,7 +25,7 @@ public class ServerDTP
 		currentPath = System.getProperty("user.dir") + "/root";
 
 		this.socketDatos = socketDatos;
-		
+
 	}
 
 	public String getCurrentPath()
@@ -88,7 +88,7 @@ public class ServerDTP
 		try
 		{
 
-			File myFile = new File(getCurrentPath()+"/"+path);
+			File myFile = new File(getCurrentPath() + "/" + path);
 			if (myFile.exists() && myFile.isFile())
 			{
 				Socket sktData = socketDatos.accept();
